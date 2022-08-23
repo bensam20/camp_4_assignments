@@ -45,7 +45,7 @@ def create_contact():
     
     try:
         name = request.json['name']
-        number = request.json['number']
+        number = int(request.json['number'])
         cursor = conn.cursor()
         cursor.execute('''
             INSERT INTO PhBook VALUES (?, ?);'''
@@ -56,76 +56,50 @@ def create_contact():
     conn.commit()
     
     #jsonify will convert dictionary to json
-    return jsonify("name : "+request.json['name'],"phNumber : "+request.json['number']),201
+    return jsonify("name : "+request.json['name'],"phNumber : "+str(request.json['number'])),201
+
+#GET method to get a contact by name
+@app.route('/contacts/<name>', methods=['GET'])
+def get_contact(name):
+    phbook = listAll()
+    #List comprehension, iterate through a list and obtain a sublist
+    names = phbook.keys()
+    if name in names:
+        return jsonify({'contact':{'name': name, 'phone': phbook[name]}})
+    else:
+        abort(404)
+
+#GET method to get a contact by number
+@app.route('/contacts/<int:number>', methods=['GET'])
+def get_contact_by_number(number):
+    phbook = listAll()
+    #List comprehension, iterate through a list and obtain a sublist
+    numbers = phbook.values()
+    if number in numbers:
+        for i in phbook:
+            if phbook[i]==number:
+                name = i
+                break
+        return jsonify({'contact':{'name': name, 'phone': number}})
+    else:
+        abort(404)
 
 
-
-
-
-# # GET request to get the data with specified id
-# @app.route('/phonebook/<int:phBook_id>', methods=['GET'])
-# def get_book(phBook_id):
-#     #List comprehension, iterate through a list and obtain a sublist
-#     phbook = [phbook for phbook in phoneBook if phbook['id']==phBook_id]
-#     if len(phbook) == 0:
-#         abort(404)
-#     else:
-#         return jsonify({'phoneBook':phbook[0]})
-
-# # POST request to save the data into the list
-# @app.route('/phonebook', methods=['POST'])
-# def create_contact():
-#     #checking if the string is a valid json
-#     if not request.json:
-#         abort(400) #400 means a bad request
-#     # create a new book as an item which can be inserted into the list
-#     # the id will be the next id number, use negative index for the last item
-#     phbook = {'id':phoneBook[-1]['id']+1,
-#     'name':request.json['name'],
-#     'ph':request.json['ph']}
-#     #append the new item into the books list
-#     phoneBook.append(phbook)
-#     #jsonify will convert dictionary to json
-#     return jsonify({'phbook':phbook}),201
-
-
-# #PUT request to edit the data
-# @app.route('/phonebook/<int:phbook_id>', methods=['PUT'])
-# def upadate_book(phbook_id):
-#     #List comprehension, iterate through a list and obtain a sublist
-#     phbook = [phbook for phbook in phoneBook if phbook['id']==phbook_id]
-#     if len(phbook) == 0:
-#         abort(404)
-#     #checking if the json from the client has valid title, author keys
-#     if 'name' in request.json and type(request.json['name']) != str:
-#         abort(400)
-#     if 'ph' in request.json and type(request.json['ph']) != str:
-#         abort(400)
-
-#     # if no abort conditions occur, update the entry with the specific id
-#     phbook[0]['name'] = request.json['name']
-#     phbook[0]['ph'] = request.json['ph']
-
-#     #return the updated record
-#     return jsonify({'phbook':phbook[0]})
-
-
-# #DELETE request to delete the data
-# @app.route('/phonebook/<int:phbook_id>', methods=['DELETE'])
-# def delete_contact(phbook_id):
-#     #List comprehension, iterate through a list and obtain a sublist
-#     phbook = [phbook for phbook in phoneBook if phbook['id']==phbook_id]
-#     if len(phbook) == 0:
-#         abort(404)
-
-#     #remove that item from the list
-#     phoneBook.remove(phbook[0])
-
-#     #return the status
-#     return jsonify({'status':'deleted'})
-
-
-
+#DELETE request to delete the data by name
+@app.route('/contacts/<name>', methods=['DELETE'])
+def delete_contact(name):
+    try:
+        cursor = conn.cursor()
+        cursor.execute('''
+            DELETE FROM PhBook
+            WHERE Name=(?);'''
+            ,(name)
+        )
+        conn.commit()
+        return jsonify({'status':'deleted'})
+    except Exception as e:
+        print(type(e).__name__)
+    conn.commit()
 
 
 #check if its the main module, then run the app
