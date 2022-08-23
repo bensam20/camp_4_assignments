@@ -61,7 +61,7 @@ def client_program():
         else:
             print("Wrong choice")
 
-        print("MENU:\n1 -> List all contacts\n2 -> Add a new contact\n3 -> Delete a contact\n4 -> Search a contact\n5 -> Search a contact with number\n6 -> Exit")
+        print("\nMENU:\n1 -> List all contacts\n2 -> Add a new contact\n3 -> Delete a contact\n4 -> Search a contact\n5 -> Search a contact with number\n6 -> Exit")
         choice = input("Enter your choice: ")
     
     client_socket.close()
